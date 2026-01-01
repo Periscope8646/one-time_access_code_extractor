@@ -664,3 +664,4 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/jetbrains,jetbrains+all,rider,dotnetcore,csharp,windows,linux
+*/client_secret*

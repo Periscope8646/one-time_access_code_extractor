@@ -4,6 +4,7 @@ using one_time_access_code_extractor.Repositories.Base;
 using one_time_access_code_extractor.Repositories.GoogleAuth;
 using one_time_access_code_extractor.Services.Auth;
 using one_time_access_code_extractor.Services.Auth.GoogleAuth;
+using one_time_access_code_extractor.Services.Gmail;
 
 
 namespace one_time_access_code_extractor.Configuration;
@@ -20,5 +21,6 @@ public static class DependencyInjection
         // Register services
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IGoogleAuthService, GoogleAuthService>();
+        services.AddScoped<IGmailService, GmailService>();
     }
 }
