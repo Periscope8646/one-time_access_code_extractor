@@ -1,0 +1,17 @@
+﻿{
+  "Logging": {
+    "LogLevel": {
+      "Default": "Debug",
+      "System": "Information",
+      "Microsoft": "Information"
+    }
+  },
+  "GoogleAuth": {
+    "ClientId": "",
+    "ClientSecret": "",
+    "RedirectUri": "https://localhost:7226/googleauth/callback",
+    "TokenUrl": "https://oauth2.googleapis.com/token",
+    "Scopes": "openid profile email https://www.googleapis.com/auth/gmail.readonly",
+    "ApiKey": ""
+  }
+}
