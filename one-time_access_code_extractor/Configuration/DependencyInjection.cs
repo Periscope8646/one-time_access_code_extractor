@@ -21,6 +21,6 @@ public static class DependencyInjection
         // Register services
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IGoogleAuthService, GoogleAuthService>();
-        services.AddScoped<IGmailService, GmailService>();
+        services.AddScoped<IDisneyPlusGmailService, DisneyPlusGmailService>();
     }
 }

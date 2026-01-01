@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 using one_time_access_code_extractor.Services.Gmail;
 using one_time_access_code_extractor.Utils;
 
@@ -11,20 +10,25 @@ namespace one_time_access_code_extractor.Controllers;
 [Route("[controller]")]
 public class GmailController : ControllerBase
 {
-    private readonly ILogger<GmailController> _logger;
-    private readonly IGmailService _gmailService;
+    private readonly IDisneyPlusGmailService _disneyPlusGmailService;
 
-    public GmailController(ILogger<GmailController> logger, IGmailService gmailService)
+    public GmailController(IDisneyPlusGmailService disneyPlusGmailService)
     {
-        _logger = logger;
-        _gmailService = gmailService;
+        _disneyPlusGmailService = disneyPlusGmailService;
     }
 
 
     [HttpGet("profile")]
     public async Task<IActionResult> GetProfile()
     {
-        var result = await _gmailService.GetProfile(User.GetUserId());
+        var result = await _disneyPlusGmailService.GetProfile(User.GetUserId());
+        return Ok(result);
+    }
+
+    [HttpGet("disneyPlus-access_code")]
+    public async Task<IActionResult> GetDisneyPlusAccessCode()
+    {
+        var result = await _disneyPlusGmailService.GetAccessCode(User.GetUserId());
         return Ok(result);
     }
 }
