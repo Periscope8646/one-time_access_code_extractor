@@ -1,5 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using one_time_access_code_extractor.Services;
+using one_time_access_code_extractor.Services.Discord;
 
 namespace one_time_access_code_extractor.Configuration;
 

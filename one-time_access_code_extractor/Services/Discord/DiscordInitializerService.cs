@@ -3,7 +3,7 @@ using DSharpPlus.EventArgs;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 
-namespace one_time_access_code_extractor.Services;
+namespace one_time_access_code_extractor.Services.Discord;
 
 public interface IDiscordInitializerService
 {

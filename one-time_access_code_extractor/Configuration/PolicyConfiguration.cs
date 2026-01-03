@@ -19,6 +19,12 @@ public static class PolicyConfiguration
         var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
         var httpContext = httpContextAccessor.HttpContext;
 
+        if (httpContext == null)
+        {
+            // Return the policy without user-specific checks for background/system tasks
+            return new AuthorizedGmailPolicy(PollyPolicies.GetAuthorizedGmailRetryPolicy(serviceProvider));
+        }
+
         if (httpContext?.User.Identity is not { IsAuthenticated: true })
         {
             throw new UnauthorizedAccessException(ConstMessages.UserNotAuthenticated);

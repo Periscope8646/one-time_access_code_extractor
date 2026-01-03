@@ -11,7 +11,19 @@ public class GmailAuthorizedServiceBase(string serviceName, IGoogleAuthService g
 {
     protected async Task<GmailService> InitializeGmailServiceWithAccessTokenAsync(string requestingApplicationUserId)
     {
-        logger.LogInformation("Initializing Gmail {ServiceName} Authorized Service for user {RequestingApplicationUserId}", serviceName, requestingApplicationUserId);
+        logger.LogInformation("Initializing Gmail {ServiceName} Authorized Service called by user {RequestingApplicationUserId}", serviceName, requestingApplicationUserId);
+
+        return new GmailService(new BaseClientService.Initializer
+        {
+            HttpClientInitializer = GoogleCredential.FromAccessToken(
+                await googleAuthService.GetAccessTokenAsync()),
+            ApplicationName = "Gmail AccessToken Authorized to one-time_access_code_extractor"
+        });
+    }
+
+    protected async Task<GmailService> InitializeGmailServiceWithAccessTokenAsync()
+    {
+        logger.LogInformation("Initializing Gmail {ServiceName} Authorized Service for Discord", serviceName);
 
         return new GmailService(new BaseClientService.Initializer
         {

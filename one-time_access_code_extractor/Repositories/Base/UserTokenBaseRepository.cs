@@ -7,7 +7,9 @@ namespace one_time_access_code_extractor.Repositories.Base;
 
 public interface ITokenBaseRepository<T> where T : Token
 {
-    Task SaveTokenAsync(string accessToken, string? refreshToken, int? expiresIn);
+    Task SaveTokenAsync(string accessToken, string? refreshToken, int? accessTokenExpiresIn = null,
+        int? refreshTokenExpiresIn = null);
+
     Task<string?> GetRefreshTokenAsync();
     Task<string> GetAccessTokenAsync();
 }
@@ -28,20 +30,50 @@ public class TokenBaseRepository<T> : ITokenBaseRepository<T> where T : Token
         _dbSet = dbSet;
     }
 
-    public async Task SaveTokenAsync(string accessToken, string? refreshToken, int? expiresIn)
+    public async Task SaveTokenAsync(string accessToken, string? refreshToken, int? accessTokenExpiresIn = null,
+        int? refreshTokenExpiresIn = null)
     {
         var existingTokens = await _dbSet.ToListAsync();
-        _dbSet.RemoveRange(existingTokens);
 
-        var newTokens = Activator.CreateInstance<T>();
+        if (existingTokens.Count != 0)
+        {
+            var dbEntry = existingTokens[0];
+            dbEntry.AccessToken = accessToken;
 
-        newTokens.AccessToken = accessToken;
-        newTokens.RefreshToken = refreshToken!;
-        newTokens.ExpiresAt = DateTime.UtcNow.AddSeconds((double)expiresIn!);
+            if (accessTokenExpiresIn != null)
+            {
+                dbEntry.AccessTokenExpiresAt = DateTime.UtcNow.AddSeconds((double)accessTokenExpiresIn);
+            }
 
-        await _dbSet.AddAsync(newTokens);
+            if (refreshTokenExpiresIn != null)
+            {
+                dbEntry.RefreshTokenExpiresAt = DateTime.UtcNow.AddSeconds(refreshTokenExpiresIn.Value);
+            }
 
-        _logger.LogInformation("Created new {TokenProvider} token", _tokenProvider);
+            _dbSet.Update(dbEntry);
+            _logger.LogInformation("Updated {TokenProvider} token", _tokenProvider);
+        }
+        else
+        {
+            var newEntry = Activator.CreateInstance<T>();
+
+            newEntry.AccessToken = accessToken;
+            newEntry.RefreshToken = refreshToken!;
+
+            if (accessTokenExpiresIn != null)
+            {
+                newEntry.AccessTokenExpiresAt = DateTime.UtcNow.AddSeconds((double)accessTokenExpiresIn);
+            }
+
+            if (refreshTokenExpiresIn != null)
+            {
+                newEntry.RefreshTokenExpiresAt = DateTime.UtcNow.AddSeconds(refreshTokenExpiresIn.Value);
+            }
+
+            await _dbSet.AddAsync(newEntry);
+
+            _logger.LogInformation("Created new {TokenProvider} token", _tokenProvider);
+        }
 
 
         await _db.SaveChangesAsync();

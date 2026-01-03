@@ -43,9 +43,9 @@ public class GoogleAuthService : IGoogleAuthService
         _tokenUrl = config["GoogleAuth:TokenUrl"] ?? throw new InvalidOperationException("Google Token URL is not configured.");
     }
 
-    private async Task CreateGoogleToken(string accessToken, string? refreshToken = null, int? expiresIn = null)
+    private async Task CreateGoogleToken(string accessToken, string? refreshToken = null, int? accessTokenExpiresIn = null, int? refreshTokenExpiresIn = null)
     {
-        await _googleTokenRepository.SaveTokenAsync(accessToken, refreshToken, expiresIn);
+        await _googleTokenRepository.SaveTokenAsync(accessToken, refreshToken, accessTokenExpiresIn, refreshTokenExpiresIn);
         _logger.LogInformation("Saved or updated Google token");
     }
 
@@ -76,10 +76,11 @@ public class GoogleAuthService : IGoogleAuthService
         var payload = await tokenResponse.Content.ReadFromJsonAsync<JsonElement>();
         var accessToken = payload.GetProperty("access_token").GetString()!;
         var refreshToken = payload.GetProperty("refresh_token").GetString()!;
-        var expiresIn = payload.GetProperty("expires_in").GetInt32();
+        var accessTokenExpireIn = payload.GetProperty("expires_in").GetInt32();
+        var refreshTokenExpireIn = payload.GetProperty("refresh_token_expires_in").GetInt32();
 
 
-        await CreateGoogleToken(accessToken, refreshToken, expiresIn);
+        await CreateGoogleToken(accessToken, refreshToken, accessTokenExpireIn, refreshTokenExpireIn);
     }
 
     public async Task<bool> RefreshTokenAsync()
@@ -96,8 +97,9 @@ public class GoogleAuthService : IGoogleAuthService
 
         var payload = await tokenResponse.Content.ReadFromJsonAsync<JsonElement>();
         var accessToken = payload.GetProperty("access_token").GetString()!;
+        var accessTokenExpiresIn = payload.GetProperty("expires_in").GetInt32()!;
 
-        await CreateGoogleToken(accessToken);
+        await CreateGoogleToken(accessToken, null, accessTokenExpiresIn, null);
 
 
         return true;
