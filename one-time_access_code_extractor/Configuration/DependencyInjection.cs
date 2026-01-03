@@ -2,6 +2,7 @@
 using one_time_access_code_extractor.Repositories.Auth;
 using one_time_access_code_extractor.Repositories.Base;
 using one_time_access_code_extractor.Repositories.GoogleAuth;
+using one_time_access_code_extractor.Services;
 using one_time_access_code_extractor.Services.Auth;
 using one_time_access_code_extractor.Services.Auth.GoogleAuth;
 using one_time_access_code_extractor.Services.Gmail;
@@ -22,5 +23,9 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IGoogleAuthService, GoogleAuthService>();
         services.AddScoped<IDisneyPlusGmailService, DisneyPlusGmailService>();
+
+        // Discord
+        services.AddSingleton<IDiscordMessageHandler, DiscordMessageHandler>();
+        services.AddSingleton<IDiscordInitializerService, DiscordInitializerService>();
     }
 }

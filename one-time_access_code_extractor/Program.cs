@@ -16,6 +16,7 @@ builder.Services.ConfigureSwagger();
 builder.Services.ConfigureHttpClients(builder.Configuration);
 builder.Services.ConfigurePolicies();
 builder.Services.RegisterApplicationServices();
+builder.Services.InitializeApplication();
 
 var app = builder.Build();
 await app.ConfigureMiddleware();
