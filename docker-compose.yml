@@ -9,3 +9,9 @@
       - "host.docker.internal:host-gateway"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+    networks:
+      - backend
+
+networks:
+  backend:
+    external: true

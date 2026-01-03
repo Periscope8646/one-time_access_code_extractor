@@ -76,15 +76,22 @@ Configure the email patterns to search for:
    ```
 
 ### Docker Compose (Recommended)
-1. Configure `one-time_access_code_extractor/appsettings.json` with your actual credentials and connection string.
+
+1. Create an external network for the application to communicate with other containers (e.g., PostgreSQL):
+   ```bash
+   docker network create backend
+   ```
+2. Configure `one-time_access_code_extractor/appsettings.Production.json` with your actual credentials and connection string.
+   - **Note**: The application runs in `Production` mode in Docker, so it uses `appsettings.Production.json` for configuration.
    - **Note for Local Database Tunnels**: If you are tunneling a database from a VPS to your local `5432` port, use `host.docker.internal` instead of `127.0.0.1` or `localhost` in your connection string (e.g., `Host=host.docker.internal;Port=5432;...`).
-2. Start the application:
+   - **Note for Containerized Database**: If your PostgreSQL is running in another Docker container on the same `backend` network, use the container name as the host in your connection string (e.g., `Host=postgres-db;Port=5432;...`).
+3. Start the application:
    ```bash
    docker compose up -d --build
    ```
 
 ### Docker Setup (Manual)
-1. Configure `one-time_access_code_extractor/appsettings.json` with your actual credentials and connection string.
+1. Configure `one-time_access_code_extractor/appsettings.Production.json` with your actual credentials and connection string.
 2. Build the image:
    ```bash
    docker build -t access-code-extractor -f one-time_access_code_extractor/Dockerfile .
