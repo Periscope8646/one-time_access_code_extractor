@@ -27,7 +27,7 @@ public static class PolicyConfiguration
         var userIdClaim = ClaimHelper.GetUserId(httpContext.User);
         var policy = userIdClaim == null
             ? throw new UnauthorizedAccessException(ConstMessages.UserIdClaimNotFound)
-            : PollyPolicies.GetAuthorizedGmailRetryPolicy(serviceProvider, userIdClaim);
+            : PollyPolicies.GetAuthorizedGmailRetryPolicy(serviceProvider);
 
         return new AuthorizedGmailPolicy(policy);
     }

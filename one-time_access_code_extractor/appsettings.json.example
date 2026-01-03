@@ -7,7 +7,7 @@
     }
   },
   "ConnectionStrings": {
-    "Default": "Data Source=Data/app.db" // SQLite - copy to bin folder if not present
+    "Default": "" // PostgreSQL - copy to bin folder if not present
   },
   "Jwt": {
     "Issuer": "one-time-access-code-extractor",

@@ -8,25 +8,7 @@ namespace one_time_access_code_extractor.Policies;
 
 public static class PollyPolicies
 {
-    public static IAsyncPolicy<HttpResponseMessage> GetGoogleManualApiRetryPolicy(IServiceProvider sp, string userId)
-    {
-        return Policy<HttpResponseMessage>
-            .HandleResult(r => r.StatusCode == HttpStatusCode.Unauthorized)
-            .RetryAsync(1, async (outcome, retryCount, context) =>
-            {
-                using var scope = sp.CreateScope();
-                var googleAuthService = scope.ServiceProvider.GetRequiredService<IGoogleAuthService>();
-
-                var refreshed = await googleAuthService.RefreshTokenAsync(userId);
-                if (!refreshed)
-                {
-                    throw new UnauthorizedAccessException("Google refresh token invalid. User must re-login.");
-                }
-            });
-    }
-
-
-    public static IAsyncPolicy GetAuthorizedGmailRetryPolicy(IServiceProvider sp, string userId)
+    public static IAsyncPolicy GetAuthorizedGmailRetryPolicy(IServiceProvider sp)
     {
         return Policy
             .Handle<UnauthorizedAccessException>()
@@ -35,7 +17,7 @@ public static class PollyPolicies
             {
                 using var scope = sp.CreateScope();
                 var googleAuthService = scope.ServiceProvider.GetRequiredService<IGoogleAuthService>();
-                var refreshed = await googleAuthService.RefreshTokenAsync(userId);
+                var refreshed = await googleAuthService.RefreshTokenAsync();
                 if (!refreshed)
                     throw new UnauthorizedAccessException("Gmail (Google) refresh token invalid. User must re-login.");
             });

@@ -13,7 +13,7 @@ public static class DatabaseConfiguration
     {
         services.AddDbContext<ApplicationDbContext>(options =>
         {
-            options.UseSqlite(configuration.GetConnectionString("Default"));
+            options.UseNpgsql(configuration.GetConnectionString("Default"));
         });
 
         services.AddIdentity<ApplicationUser, IdentityRole>(options =>

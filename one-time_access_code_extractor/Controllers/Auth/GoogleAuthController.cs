@@ -49,37 +49,36 @@ public class GoogleAuthController : ControllerBase
         }
     }
 
-    [Authorize]
     [HttpGet("callback")]
+    [Produces("application/json", Type = typeof(string))]
     public async Task<IActionResult> GoogleCallback([FromQuery] string code)
     {
         if (string.IsNullOrEmpty(code)) return BadRequest(new { error = "Authorization code is missing." });
 
         try
         {
-            await _googleAuthService.LoginCallbackAsync(User.GetUserId(), code);
-            return Ok(new { userId = User.GetUserId() });
+            await _googleAuthService.LoginCallbackAsync(code);
+            return Ok("completed");
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error during Google OAuth callback for user {UserId}", User.GetUserId());
+            _logger.LogError(e, "Error during Google OAuth callback");
             return StatusCode(500, new { error = "An error occurred while processing your request." });
         }
     }
 
-    [Authorize]
     [HttpPost("refresh-token")]
     public async Task<IActionResult> RefreshToken()
     {
         try
         {
-            await _googleAuthService.RefreshTokenAsync(User.GetUserId());
+            await _googleAuthService.RefreshTokenAsync();
 
-            return Ok(new { userId = (User.GetUserId()) });
+            return Ok();
         }
         catch (Exception e)
         {
-            _logger.LogError(e, "Error during Google token refresh for user {UserId}", (User.GetUserId()));
+            _logger.LogError(e, "Error during Google token refresh");
             return StatusCode(500, new { error = "An error occurred while processing your request." });
         }
     }

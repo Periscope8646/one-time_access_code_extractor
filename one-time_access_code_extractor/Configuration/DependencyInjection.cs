@@ -15,9 +15,9 @@ public static class DependencyInjection
     public static void RegisterApplicationServices(this IServiceCollection services)
     {
         // Register repositories
-        services.AddScoped(typeof(IUserTokenBaseRepository<>), typeof(UserTokenBaseRepository<>));
+        services.AddScoped(typeof(ITokenBaseRepository<>), typeof(TokenBaseRepository<>));
         services.AddScoped<IAuthRepository, AuthRepository>();
-        services.AddScoped<IGoogleUserTokenRepository, GoogleUserTokenUserTokenRepository>();
+        services.AddScoped<IGoogleTokenRepository, GoogleTokenTokenRepository>();
 
         // Register services
         services.AddScoped<IAuthService, AuthService>();

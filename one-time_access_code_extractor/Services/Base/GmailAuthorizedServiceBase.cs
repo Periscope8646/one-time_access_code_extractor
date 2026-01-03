@@ -16,7 +16,7 @@ public class GmailAuthorizedServiceBase(string serviceName, IGoogleAuthService g
         return new GmailService(new BaseClientService.Initializer
         {
             HttpClientInitializer = GoogleCredential.FromAccessToken(
-                await googleAuthService.GetAccessTokenAsync(requestingApplicationUserId)),
+                await googleAuthService.GetAccessTokenAsync()),
             ApplicationName = "Gmail AccessToken Authorized to one-time_access_code_extractor"
         });
     }

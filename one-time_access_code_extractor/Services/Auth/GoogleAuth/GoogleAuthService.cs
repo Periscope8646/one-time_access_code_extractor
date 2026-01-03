@@ -9,17 +9,16 @@ namespace one_time_access_code_extractor.Services.Auth.GoogleAuth;
 
 public interface IGoogleAuthService
 {
-    Task<string> LoginCallbackAsync(string userId, string code);
-    Task<bool> RefreshTokenAsync(string userId);
-    Task<string> GetAccessTokenAsync(string userId);
+    Task LoginCallbackAsync(string code);
+    Task<bool> RefreshTokenAsync();
+    Task<string> GetAccessTokenAsync();
 }
 
 public class GoogleAuthService : IGoogleAuthService
 {
     private readonly ILogger<GoogleAuthService> _logger;
-    private readonly IGoogleUserTokenRepository _googleUserTokenRepository;
+    private readonly IGoogleTokenRepository _googleTokenRepository;
     private readonly IHttpClientFactory _httpClientFactory;
-    private readonly IServiceProvider _serviceProvider;
 
     private readonly string? _tokenUrl;
     private readonly string? _clientId;
@@ -31,14 +30,12 @@ public class GoogleAuthService : IGoogleAuthService
     public GoogleAuthService(
         ILogger<GoogleAuthService> logger,
         IConfiguration config,
-        IGoogleUserTokenRepository googleUserTokenRepository,
-        IHttpClientFactory httpClientFactory,
-        IServiceProvider serviceProvider)
+        IGoogleTokenRepository googleTokenRepository,
+        IHttpClientFactory httpClientFactory)
     {
         _logger = logger;
-        _googleUserTokenRepository = googleUserTokenRepository;
+        _googleTokenRepository = googleTokenRepository;
         _httpClientFactory = httpClientFactory;
-        _serviceProvider = serviceProvider;
 
         _clientId = config["GoogleAuth:ClientId"] ?? throw new InvalidOperationException("Google Client ID is not configured.");
         _clientSecret = config["GoogleAuth:ClientSecret"] ?? throw new InvalidOperationException("Google Client Secret is not configured.");
@@ -46,24 +43,24 @@ public class GoogleAuthService : IGoogleAuthService
         _tokenUrl = config["GoogleAuth:TokenUrl"] ?? throw new InvalidOperationException("Google Token URL is not configured.");
     }
 
-    private async Task CreateOrUpdateUserTokens(string userId, string accessToken, string? refreshToken = null, int? expiresIn = null)
+    private async Task CreateGoogleToken(string accessToken, string? refreshToken = null, int? expiresIn = null)
     {
-        await _googleUserTokenRepository.SaveOrUpdateUserTokensAsync(userId, accessToken, refreshToken, expiresIn);
-        _logger.LogInformation("Saved or updated Google tokens for user {UserId}", userId);
+        await _googleTokenRepository.SaveTokenAsync(accessToken, refreshToken, expiresIn);
+        _logger.LogInformation("Saved or updated Google token");
     }
 
-    private async Task<string> GetRefreshTokenAsync(string userId)
+    private async Task<string> GetRefreshTokenAsync()
     {
-        var token = await _googleUserTokenRepository.GetRefreshTokenAsync(userId);
+        var token = await _googleTokenRepository.GetRefreshTokenAsync();
         if (token == null)
         {
-            _logger.LogWarning("No refresh token found for user {UserId}", userId);
-            throw new ArgumentException("No refresh token found for user", nameof(userId));
+            _logger.LogWarning("No refresh token found");
+            throw new ArgumentException("No refresh token found");
         }
         return token;
     }
 
-    public async Task<string> LoginCallbackAsync(string userId, string code)
+    public async Task LoginCallbackAsync(string code)
     {
         var tokenResponse = await HttpClient.PostAsync(
             _tokenUrl,
@@ -82,12 +79,10 @@ public class GoogleAuthService : IGoogleAuthService
         var expiresIn = payload.GetProperty("expires_in").GetInt32();
 
 
-        await CreateOrUpdateUserTokens(userId, accessToken, refreshToken, expiresIn);
-
-        return userId;
+        await CreateGoogleToken(accessToken, refreshToken, expiresIn);
     }
 
-    public async Task<bool> RefreshTokenAsync(string userId)
+    public async Task<bool> RefreshTokenAsync()
     {
         var tokenResponse = await HttpClient.PostAsync(
             _tokenUrl,
@@ -95,21 +90,21 @@ public class GoogleAuthService : IGoogleAuthService
             {
                 { "client_id", _clientId! },
                 { "client_secret", _clientSecret! },
-                { "refresh_token", await GetRefreshTokenAsync(userId) },
+                { "refresh_token", await GetRefreshTokenAsync() },
                 { "grant_type", "refresh_token" }
             }));
 
         var payload = await tokenResponse.Content.ReadFromJsonAsync<JsonElement>();
         var accessToken = payload.GetProperty("access_token").GetString()!;
 
-        await CreateOrUpdateUserTokens(userId, accessToken);
+        await CreateGoogleToken(accessToken);
 
 
         return true;
     }
 
-    public Task<string> GetAccessTokenAsync(string userId)
+    public Task<string> GetAccessTokenAsync()
     {
-        return _googleUserTokenRepository.GetAccessTokenAsync(userId);
+        return _googleTokenRepository.GetAccessTokenAsync();
     }
 }
