@@ -51,7 +51,7 @@ public class DisneyPlusGmailService : GmailAuthorizedServiceBase, IDisneyPlusGma
     {
         return await ExecuteWithRetryAsync(async () =>
         {
-            var gmailService = await InitializeGmailServiceAsync(requestingApplicationUserId);
+            var gmailService = await InitializeGmailServiceWithAccessTokenAsync(requestingApplicationUserId);
             return await gmailService.Users.GetProfile("me").ExecuteAsync();
         });
     }
@@ -60,7 +60,7 @@ public class DisneyPlusGmailService : GmailAuthorizedServiceBase, IDisneyPlusGma
     {
         return await ExecuteWithRetryAsync(async () =>
         {
-            var gmailService = await InitializeGmailServiceAsync(requestingApplicationUserId);
+            var gmailService = await InitializeGmailServiceWithAccessTokenAsync(requestingApplicationUserId);
 
             var messageSummaries = await ListRecentMessagesAsync(gmailService);
             if (messageSummaries == null || !messageSummaries.Any()) return new DisneyPlusResponseDto(SearchHoursLimit);
@@ -78,7 +78,7 @@ public class DisneyPlusGmailService : GmailAuthorizedServiceBase, IDisneyPlusGma
         });
     }
 
-    private async Task<IList<Message>?> ListRecentMessagesAsync(Google.Apis.Gmail.v1.GmailService service)
+    private async Task<IList<Message>?> ListRecentMessagesAsync(GmailService service)
     {
         var request = service.Users.Messages.List("me");
         var after = DateTimeOffset.UtcNow.AddHours(SearchHoursLimit).ToUnixTimeSeconds();
@@ -119,7 +119,7 @@ public class DisneyPlusGmailService : GmailAuthorizedServiceBase, IDisneyPlusGma
         return emailResults;
     }
 
-    private async Task<DisneyPlusResponseDto> ExtractCodeFromMessageAsync(Google.Apis.Gmail.v1.GmailService service, EmailMetaData emailMetaData)
+    private async Task<DisneyPlusResponseDto> ExtractCodeFromMessageAsync(GmailService service, EmailMetaData emailMetaData)
     {
         var fullMessage = await service.Users.Messages.Get("me", emailMetaData.Id).ExecuteAsync();
         var body = GetDecodedBody(fullMessage.Payload);

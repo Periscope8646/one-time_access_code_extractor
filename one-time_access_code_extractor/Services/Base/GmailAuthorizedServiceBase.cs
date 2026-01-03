@@ -9,7 +9,7 @@ namespace one_time_access_code_extractor.Services.Base;
 
 public class GmailAuthorizedServiceBase(string serviceName, IGoogleAuthService googleAuthService, ILogger logger, IAuthorizedGmailAsyncPolicy authorizedGmailAsyncPolicy)
 {
-    protected async Task<GmailService> InitializeGmailServiceAsync(string requestingApplicationUserId)
+    protected async Task<GmailService> InitializeGmailServiceWithAccessTokenAsync(string requestingApplicationUserId)
     {
         logger.LogInformation("Initializing Gmail {ServiceName} Authorized Service for user {RequestingApplicationUserId}", serviceName, requestingApplicationUserId);
 
@@ -17,7 +17,7 @@ public class GmailAuthorizedServiceBase(string serviceName, IGoogleAuthService g
         {
             HttpClientInitializer = GoogleCredential.FromAccessToken(
                 await googleAuthService.GetAccessTokenAsync(requestingApplicationUserId)),
-            ApplicationName = "Gmail Authorized to one-time_access_code_extractor"
+            ApplicationName = "Gmail AccessToken Authorized to one-time_access_code_extractor"
         });
     }
 

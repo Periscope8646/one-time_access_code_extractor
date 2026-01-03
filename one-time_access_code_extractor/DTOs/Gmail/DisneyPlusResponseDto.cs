@@ -19,6 +19,6 @@ public class DisneyPlusResponseDto
     {
         ReceivedAt = null;
         Code = null;
-        Message = $"IN ALL EMAIL IN LAST {searchHoursLimit} HOURS THERE WERE NO EMAILS WITH ACCESS CODE. TRY AGAIN";
+        Message = $"IN ALL EMAIL IN LAST {searchHoursLimit*-1} HOURS THERE WERE NO EMAILS WITH ACCESS CODE. TRY AGAIN";
     }
 }
