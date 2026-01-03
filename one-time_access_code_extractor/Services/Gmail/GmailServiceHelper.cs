@@ -7,34 +7,26 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Protocols.Configuration;
 using one_time_access_code_extractor.DTOs.Gmail;
-using one_time_access_code_extractor.Policies;
-using one_time_access_code_extractor.Services.Auth.GoogleAuth;
-using one_time_access_code_extractor.Services.Base;
 
 namespace one_time_access_code_extractor.Services.Gmail;
 
-public interface IDisneyPlusGmailService
+public interface IGmailServiceHelper
 {
-    Task<Profile> GetProfile(string requestingApplicationUserId);
-    Task<DisneyPlusResponseDto> GetAccessCode(string requestingApplicationUserId);
+    Task<IList<Message>?> ListRecentMessagesAsync(GmailService service);
+
+    Task<List<EmailMetaData>> FetchMessagesMetadataAsync(GmailService service, IList<Message> messages);
+    Task<DisneyPlusResponseDto> ExtractDisneyCodeFromMessageAsync(GmailService service, EmailMetaData emailMetaData);
 }
 
-public class DisneyPlusGmailService : GmailAuthorizedServiceBase, IDisneyPlusGmailService
+public class GmailServiceHelper : IGmailServiceHelper
 {
-    private readonly ILogger<DisneyPlusGmailService> _logger;
+    private readonly ILogger<GmailServiceHelper> _logger;
     private readonly string _disneyEmail;
-    private readonly string _disneySubject;
-    private const int SearchHoursLimit = -12;
-
-    public DisneyPlusGmailService(
-        IConfiguration configuration,
-        IGoogleAuthService googleAuthService,
-        ILogger<DisneyPlusGmailService> logger,
-        IAuthorizedGmailAsyncPolicy authorizedGmailAsyncPolicy)
-        : base("Gmail", googleAuthService, logger, authorizedGmailAsyncPolicy)
+    public static string DisneySubject;
+    public static int SearchHoursLimit = -1200;
+    public GmailServiceHelper(IConfiguration configuration, ILogger<GmailServiceHelper> logger)
     {
         _logger = logger;
-
         var disneySection = configuration.GetSection("ProviderEmails")
             .GetChildren()
             .FirstOrDefault(s => s.GetValue<string>("Provider") == "DisneyPlus");
@@ -42,43 +34,12 @@ public class DisneyPlusGmailService : GmailAuthorizedServiceBase, IDisneyPlusGma
         _disneyEmail = disneySection?.GetValue<string>("Email")
                        ?? throw new InvalidConfigurationException("DisneyPlus email not found in configuration.");
 
-        _disneySubject = disneySection?.GetValue<string>("Subject")
+        DisneySubject = disneySection?.GetValue<string>("Subject")
                          ?? throw new InvalidConfigurationException(
                              "DisneyPlus subject filter not found in configuration.");
     }
 
-    public async Task<Profile> GetProfile(string requestingApplicationUserId)
-    {
-        return await ExecuteWithRetryAsync(async () =>
-        {
-            var gmailService = await InitializeGmailServiceWithAccessTokenAsync(requestingApplicationUserId);
-            return await gmailService.Users.GetProfile("me").ExecuteAsync();
-        });
-    }
-
-    public async Task<DisneyPlusResponseDto> GetAccessCode(string requestingApplicationUserId)
-    {
-        return await ExecuteWithRetryAsync(async () =>
-        {
-            var gmailService = await InitializeGmailServiceWithAccessTokenAsync(requestingApplicationUserId);
-
-            var messageSummaries = await ListRecentMessagesAsync(gmailService);
-            if (messageSummaries == null || !messageSummaries.Any()) return new DisneyPlusResponseDto(SearchHoursLimit);
-
-            var metadataList = await FetchMessagesMetadataAsync(gmailService, messageSummaries);
-
-            var targetEmail = metadataList
-                .Where(x => x.Subject.Contains(_disneySubject))
-                .OrderByDescending(x => x.ReceivedAt)
-                .FirstOrDefault();
-
-            if (targetEmail == null) return new DisneyPlusResponseDto(SearchHoursLimit);
-
-            return await ExtractCodeFromMessageAsync(gmailService, targetEmail);
-        });
-    }
-
-    private async Task<IList<Message>?> ListRecentMessagesAsync(GmailService service)
+    public async Task<IList<Message>?> ListRecentMessagesAsync(GmailService service)
     {
         var request = service.Users.Messages.List("me");
         var after = DateTimeOffset.UtcNow.AddHours(SearchHoursLimit).ToUnixTimeSeconds();
@@ -89,7 +50,7 @@ public class DisneyPlusGmailService : GmailAuthorizedServiceBase, IDisneyPlusGma
         return response.Messages;
     }
 
-    private async Task<List<EmailMetaData>> FetchMessagesMetadataAsync(GmailService service,
+    public async Task<List<EmailMetaData>> FetchMessagesMetadataAsync(GmailService service,
         IList<Message> messages)
     {
         var emailResults = new List<EmailMetaData>();
@@ -119,7 +80,7 @@ public class DisneyPlusGmailService : GmailAuthorizedServiceBase, IDisneyPlusGma
         return emailResults;
     }
 
-    private async Task<DisneyPlusResponseDto> ExtractCodeFromMessageAsync(GmailService service, EmailMetaData emailMetaData)
+    public async Task<DisneyPlusResponseDto> ExtractDisneyCodeFromMessageAsync(GmailService service, EmailMetaData emailMetaData)
     {
         var fullMessage = await service.Users.Messages.Get("me", emailMetaData.Id).ExecuteAsync();
         var body = GetDecodedBody(fullMessage.Payload);

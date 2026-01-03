@@ -10,9 +10,9 @@ namespace one_time_access_code_extractor.Controllers;
 [Route("[controller]")]
 public class GmailController : ControllerBase
 {
-    private readonly IDisneyPlusGmailService _disneyPlusGmailService;
+    private readonly IApiDisneyPlusGmailService _disneyPlusGmailService;
 
-    public GmailController(IDisneyPlusGmailService disneyPlusGmailService)
+    public GmailController(IApiDisneyPlusGmailService disneyPlusGmailService)
     {
         _disneyPlusGmailService = disneyPlusGmailService;
     }

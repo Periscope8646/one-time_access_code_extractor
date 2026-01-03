@@ -22,7 +22,9 @@ public static class DependencyInjection
         // Register services
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<IGoogleAuthService, GoogleAuthService>();
-        services.AddScoped<IDisneyPlusGmailService, DisneyPlusGmailService>();
+        services.AddScoped<IApiDisneyPlusGmailService, ApiDisneyPlusGmailService>();
+        services.AddScoped<IGmailServiceHelper, GmailServiceHelper>();
+        services.AddScoped<IDiscordDisneyPlusGmailService, DiscordDisneyPlusGmailService>();
 
         // Discord
         services.AddSingleton<IDiscordMessageHandler, DiscordMessageHandler>();
