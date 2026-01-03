@@ -6,6 +6,7 @@ namespace one_time_access_code_extractor.Services;
 public interface IDiscordWhitelistService
 {
     Task SaveOrUpdateAsync(DiscordWhitelistDto discordWhitelistDto);
+    Task<bool> IsUserWhitelistedAsync(ulong discordUserId, string platformName);
 }
 
 public class DiscordWhitelistService : IDiscordWhitelistService
@@ -20,5 +21,10 @@ public class DiscordWhitelistService : IDiscordWhitelistService
     public async Task SaveOrUpdateAsync(DiscordWhitelistDto discordWhitelistDto)
     {
         await _discordWhitelistRepository.SaveOrUpdateAsync(discordWhitelistDto);
+    }
+
+    public Task<bool> IsUserWhitelistedAsync(ulong discordUserId, string platformName)
+    {
+        return _discordWhitelistRepository.IsUserWhitelistedAsync(discordUserId, platformName);
     }
 }

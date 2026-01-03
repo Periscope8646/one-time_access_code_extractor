@@ -8,6 +8,7 @@ namespace one_time_access_code_extractor.Repositories;
 public interface IDiscordWhitelistRepository
 {
     Task SaveOrUpdateAsync(DiscordWhitelistDto discordWhitelistDto);
+    Task<bool> IsUserWhitelistedAsync(ulong discordUserId, string platformName);
 }
 
 public class DiscordWhitelistRepository : IDiscordWhitelistRepository
@@ -42,5 +43,11 @@ public class DiscordWhitelistRepository : IDiscordWhitelistRepository
         }
 
         await _db.SaveChangesAsync();
+    }
+
+    public async Task<bool> IsUserWhitelistedAsync(ulong discordUserId, string platformName)
+    {
+        return await _db.DiscordWhitelist
+            .AnyAsync(x => x.DiscordUserId == discordUserId && x.Platforms.AsEnumerable().Contains(platformName));
     }
 }

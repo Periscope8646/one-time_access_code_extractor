@@ -2,6 +2,7 @@
 using DSharpPlus.EventArgs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using one_time_access_code_extractor.ConstValues;
 using one_time_access_code_extractor.Services.Gmail;
 
 namespace one_time_access_code_extractor.Services.Discord;
@@ -30,10 +31,23 @@ public class DiscordMessageHandler : IDiscordMessageHandler
             await e.Message.RespondAsync("Pong! 🏓");
         }
 
-        if (e.Message.Content.StartsWith("!disney", StringComparison.CurrentCultureIgnoreCase))
+        if (e.Message.Content.StartsWith($"!{Platforms.DisneyPlus}", StringComparison.CurrentCultureIgnoreCase))
         {
             _logger.LogInformation("Received request for Disney+ access code");
-            await SendAccessCode(e);
+
+            using var scope = _scopeFactory.CreateScope();
+            var discordWhitelistService = scope.ServiceProvider.GetRequiredService<IDiscordWhitelistService>();
+            var isWhitelisted = await discordWhitelistService.IsUserWhitelistedAsync(e.Message.Author.Id, Platforms.DisneyPlus);
+
+            if (isWhitelisted)
+            {
+                _logger.LogInformation("User is whitelisted, performing search");
+                await SendAccessCode(e);
+            }
+            else
+            {
+                _logger.LogInformation("User is not whitelisted, ignoring request");
+            }
         }
 
     }
