@@ -9,6 +9,7 @@ public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options
 {
     public DbSet<ApplicationUser> ApplicationUsers { get; set; }
     public DbSet<GoogleToken> GoogleToken { get; set; }
+    public DbSet<DiscordWhitelist> DiscordWhitelist { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {

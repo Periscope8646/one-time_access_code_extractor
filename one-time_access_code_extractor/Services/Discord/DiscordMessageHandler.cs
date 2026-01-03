@@ -42,7 +42,7 @@ public class DiscordMessageHandler : IDiscordMessageHandler
     {
         var loadingEmbed = new DiscordEmbedBuilder()
             .WithTitle("Searching for Disney+ Code")
-            .WithDescription("Fetching data from Gmail, please wait... 🔄")
+            .WithDescription("Fetching data, please wait... 🔄")
             .WithColor(DiscordColor.Gray);
 
         var message = await e.Message.RespondAsync(embed: loadingEmbed.Build());
