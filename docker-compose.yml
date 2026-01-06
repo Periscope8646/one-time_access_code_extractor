@@ -4,7 +4,7 @@
       context: ./one-time_access_code_extractor
       dockerfile: Dockerfile
     ports:
-      - "7226:7226"
+      - "127.0.0.1:7226:7226"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     environment:
