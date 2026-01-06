@@ -19,7 +19,7 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
-    [AllowAnonymous]
+    /*[AllowAnonymous]
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromBody] RegisterDto request)
     {
@@ -34,7 +34,7 @@ public class AuthController : ControllerBase
             _logger.LogError(e, "Error during registration for user {UserName}", request.Email);
             return StatusCode(500, new { error = "Error occured while processing your request" });
         }
-    }
+    }*/
 
     [AllowAnonymous]
     [HttpPost("login-jwt")]
