@@ -9,6 +9,7 @@
       - "host.docker.internal:host-gateway"
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:7226
     networks:
       - backend
 
